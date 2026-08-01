@@ -1,4 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { submitPromptRequest } from "../api/promptApi";
 
 const initialState = {
   currentRequest: null,
@@ -7,12 +8,48 @@ const initialState = {
   error: null,
 };
 
+const normalizeApiError = (error) => {
+  if (error.response) {
+    return {
+      type: "HTTP_ERROR",
+      statusCode: error.response.status,
+      message:
+        error.response.data?.message ||
+        "The server could not process the request.",
+      errors: error.response.data?.errors || [],
+    };
+  }
+
+  if (error.code === "ERR_CANCELED") {
+    return {
+      type: "CANCELLED",
+      message: "The request was cancelled.",
+      errors: [],
+    };
+  }
+
+  if (error.request) {
+    return {
+      type: "NETWORK_ERROR",
+      message:
+        "Unable to connect to the server. Please check your connection.",
+      errors: [],
+    };
+  }
+
+  return {
+    type: "UNKNOWN_ERROR",
+    message: error.message || "An unexpected error occurred.",
+    errors: [],
+  };
+};
+
 export const submitPrompt = createAsyncThunk(
   "prompt/submitPrompt",
   async (payload, { rejectWithValue, signal }) => {
     try {
       // submitPromptRequest is a function that makes the API call to submit the prompt.
-
+      return await submitPromptRequest(payload, signal);
     } catch (error) {
       return rejectWithValue(normalizeApiError(error));
     }
