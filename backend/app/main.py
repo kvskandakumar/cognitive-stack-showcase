@@ -11,9 +11,9 @@ from dotenv import load_dotenv
 
 from .ai_service import (
     AIServiceError,
+    GeminiInsightGenerator,
     InsightGenerator,
     MockInsightGenerator,
-    OpenAIInsightGenerator,
 )
 from .repository import PromptRepository
 from .schemas import InsightsResponse, Pagination, PromptRequest, PromptResponse
@@ -24,9 +24,11 @@ load_dotenv()
 
 
 def configured_insight_generator() -> InsightGenerator:
-    use_real_openai = os.getenv("USE_REAL_OPENAI", "false").strip().casefold()
-    if use_real_openai in {"1", "true", "yes", "on"}:
-        return OpenAIInsightGenerator()
+    use_real_geminiai = os.getenv("USE_REAL_GEMINIAI", os.getenv("USE_REAL_OPENAI", "false")).strip().casefold()
+    print(f"USE_REAL_GEMINIAI={use_real_geminiai}")
+    if use_real_geminiai in {"1", "true", "yes", "on"}:
+        return GeminiInsightGenerator()
+    print("Using MockInsightGenerator for insights. Set USE_REAL_GEMINIAI=true to use Gemini.")
     return MockInsightGenerator()
 
 

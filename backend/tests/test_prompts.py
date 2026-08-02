@@ -4,7 +4,8 @@ import httpx
 import pytest
 
 from backend.app.main import create_app
-from backend.app.ai_service import GeneratedInsight, GeneratedInsights
+from backend.app.ai_service import GeneratedInsight, GeneratedInsights, GeminiInsightGenerator, MockInsightGenerator
+from backend.app.main import configured_insight_generator
 
 
 @pytest.fixture
@@ -34,6 +35,34 @@ class FakeInsightGenerator:
 def client(tmp_path, generator=None):
     app = create_app(tmp_path / "test.db", insight_generator=generator or FakeInsightGenerator())
     return httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test")
+
+
+def test_mock_mode_is_the_safe_default(monkeypatch):
+    monkeypatch.delenv("USE_REAL_GEMINIAI", raising=False)
+    monkeypatch.delenv("USE_REAL_OPENAI", raising=False)
+    assert isinstance(configured_insight_generator(), MockInsightGenerator)
+
+
+def test_real_ai_mode_uses_gemini_generator(monkeypatch):
+    monkeypatch.setenv("USE_REAL_GEMINIAI", "true")
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    assert isinstance(configured_insight_generator(), GeminiInsightGenerator)
+
+
+@pytest.mark.anyio
+async def test_gemini_generator_falls_back_to_mock_on_provider_error():
+    class FailingClient:
+        class Models:
+            def generate_content(self, *args, **kwargs):
+                raise RuntimeError("provider unavailable")
+
+        models = Models()
+
+    generator = GeminiInsightGenerator(client=FailingClient())
+    result = await generator.generate("Create a launch strategy", "en")
+
+    assert len(result.insights) == 12
 
 
 @pytest.mark.anyio

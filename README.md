@@ -55,7 +55,7 @@ for use in subsequent conversation requests. Supported languages are `de`,
 `en`, `es`, and `fr`. Missing or malformed inputs return structured 422 errors.
 Prompts shorter than five characters or lacking sufficient context return
 `NEEDS_CLARIFICATION` before any model request. Sufficiently specific prompts
-use OpenAI's Responses API and store the structured insights in SQLite.
+use Gemini's API and store the structured insights in SQLite.
 
 ## Environment variables
 
@@ -64,17 +64,17 @@ environment variable. For a deployed frontend, set `VITE_API_BASE_URL` to the
 public URL of this BFF—not to an LLM provider URL. Never place API keys in a
 `VITE_*` variable because Vite exposes those values to browser code.
 
-Configure the OpenAI integration only on the backend:
+Configure the Gemini integration only on the backend:
 
 ```bash
-USE_REAL_OPENAI=false
-OPENAI_API_KEY=your-server-side-key
-# Optional; defaults to the cost-efficient gpt-5.6-luna model
-OPENAI_MODEL=gpt-5.6-luna
+USE_REAL_GEMINIAI=false
+GEMINI_API_KEY=your-server-side-key
+# Optional; defaults to the cost-efficient gemini-2.5-flash model
+GEMINI_MODEL=gemini-2.5-flash
 ```
 
-Set `USE_REAL_OPENAI=false` for polished, production-shaped mock insights with
-no OpenAI request. Set it to `true` to generate real results using the
+Set `USE_REAL_GEMINIAI=false` for polished, production-shaped mock insights with
+no Gemini request. Set it to `true` to generate real results using the
 server-side key. Restart the backend after changing the flag.
 
 The backend accepts requests from Vite's usual local ports by default. Override
