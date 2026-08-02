@@ -7,7 +7,7 @@ export const promptSchema = z.object({
     .min(5, "Prompt must contain at least 5 characters")
     .max(2000, "Prompt cannot exceed 2000 characters"),
 
-  targetLanguage: z.enum(["en", "es", "fr"], {
+  targetLanguage: z.enum(["de", "en", "es", "fr"], {
     errorMap: () => ({
       message: "Please select a supported language",
     }),

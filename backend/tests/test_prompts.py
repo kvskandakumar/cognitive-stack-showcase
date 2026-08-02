@@ -4,6 +4,7 @@ import httpx
 import pytest
 
 from backend.app.main import create_app
+from backend.app.ai_service import GeneratedInsight, GeneratedInsights
 
 
 @pytest.fixture
@@ -11,8 +12,27 @@ def anyio_backend():
     return "asyncio"
 
 
-def client(tmp_path):
-    app = create_app(tmp_path / "test.db")
+class FakeInsightGenerator:
+    def __init__(self):
+        self.calls = 0
+
+    async def generate(self, prompt, target_language):
+        self.calls += 1
+        return GeneratedInsights(
+            insights=[
+                GeneratedInsight(
+                    title=f"Insight {index}",
+                    content=f"Result for {prompt}",
+                    category="analysis",
+                    priority="medium",
+                )
+                for index in range(12)
+            ]
+        )
+
+
+def client(tmp_path, generator=None):
+    app = create_app(tmp_path / "test.db", insight_generator=generator or FakeInsightGenerator())
     return httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test")
 
 
@@ -40,18 +60,21 @@ async def test_submit_prompt_and_get_paginated_insights(tmp_path):
 
 @pytest.mark.anyio
 async def test_vague_prompt_does_not_trigger_ai_decision(tmp_path):
-    async with client(tmp_path) as api:
+    generator = FakeInsightGenerator()
+    async with client(tmp_path, generator) as api:
         response = await api.post("/api/prompts", json={"prompt": "Help me", "targetLanguage": "fr"})
     assert response.status_code == 201
     assert response.json()["status"] == "NEEDS_CLARIFICATION"
     assert response.json()["shouldCallAi"] is False
     assert response.json()["message"] == "Please provide more details"
+    assert generator.calls == 0
 
-    async with client(tmp_path) as api:
+    async with client(tmp_path, generator) as api:
         short_response = await api.post("/api/prompts", json={"prompt": "abcd", "targetLanguage": "de"})
         insights = await api.get(f'/api/prompts/{short_response.json()["requestId"]}/insights')
     assert short_response.json()["status"] == "NEEDS_CLARIFICATION"
     assert insights.json()["pagination"]["totalItems"] == 0
+    assert generator.calls == 0
 
 
 @pytest.mark.anyio

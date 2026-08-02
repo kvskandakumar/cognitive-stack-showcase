@@ -4,8 +4,9 @@ import { promptSchema } from "../schemas/promptSchema.js";
 import { useSubmitPromptMutation } from "../api/promptApi.js";
 
 const languages = [
-    { value: "en", label: "English" },
-    { value: "es", label: "Spanish" },
+  { value: "en", label: "English" },
+  { value: "de", label: "German" },
+  { value: "es", label: "Spanish" },
     { value: "fr", label: "French" },
 ];
 
@@ -96,11 +97,14 @@ function PromptForm({ onResult }) {
                 )}
             </div>
 
-            {error && (
-                <p className="field-error" role="alert">
-                    {error.data?.message || "Unable to submit the prompt. Please try again."}
-                </p>
-            )}
+      {error && (
+        <p className="field-error" role="alert">
+          {error.data?.message ||
+            (error.status === 502
+              ? "The backend service is unavailable. Start it with npm run dev:backend."
+              : "Unable to submit the prompt. Please try again.")}
+        </p>
+      )}
 
             <button
                 type="submit"

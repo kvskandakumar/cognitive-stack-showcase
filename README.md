@@ -27,14 +27,14 @@ transferred up front; search and sorting apply to the currently returned page.
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r backend/requirements.txt
-uvicorn backend.app.main:app --reload
+npm run dev:backend
 
 # Frontend (in another terminal)
 npm install
 npm run dev
 ```
 
-The backend persists prompt requests and dummy insights in SQLite at
+The backend persists prompt requests and AI-generated insights in SQLite at
 `backend/data/prompts.db`. Interactive API documentation is available at
 `http://localhost:8000/docs`.
 
@@ -51,10 +51,35 @@ The backend persists prompt requests and dummy insights in SQLite at
 ```
 
 `contextId` is optional. The API creates one when it is omitted and returns it
-for use in subsequent conversation requests. Vague prompts return
-`NEEDS_CLARIFICATION`; sufficiently specific prompts return `SUCCESS` and store
-dummy insights locally without calling an LLM.
+for use in subsequent conversation requests. Supported languages are `de`,
+`en`, `es`, and `fr`. Missing or malformed inputs return structured 422 errors.
+Prompts shorter than five characters or lacking sufficient context return
+`NEEDS_CLARIFICATION` before any model request. Sufficiently specific prompts
+use OpenAI's Responses API and store the structured insights in SQLite.
 
 ## Environment variables
 
-VITE_API_BASE_URL=http://localhost:8000
+Local development uses Vite's `/api` proxy and does not require a frontend
+environment variable. For a deployed frontend, set `VITE_API_BASE_URL` to the
+public URL of this BFF—not to an LLM provider URL. Never place API keys in a
+`VITE_*` variable because Vite exposes those values to browser code.
+
+Configure the OpenAI integration only on the backend:
+
+```bash
+USE_REAL_OPENAI=false
+OPENAI_API_KEY=your-server-side-key
+# Optional; defaults to the cost-efficient gpt-5.6-luna model
+OPENAI_MODEL=gpt-5.6-luna
+```
+
+Set `USE_REAL_OPENAI=false` for polished, production-shaped mock insights with
+no OpenAI request. Set it to `true` to generate real results using the
+server-side key. Restart the backend after changing the flag.
+
+The backend accepts requests from Vite's usual local ports by default. Override
+this when needed with a comma-separated list, for example:
+
+```bash
+CORS_ORIGINS=https://app.example.com uvicorn backend.app.main:app
+```
