@@ -69,8 +69,8 @@ Configure the Gemini integration only on the backend:
 ```bash
 USE_REAL_GEMINIAI=false
 GEMINI_API_KEY=your-server-side-key
-# Optional; defaults to the cost-efficient gemini-2.5-flash model
-GEMINI_MODEL=gemini-2.5-flash
+# Optional; defaults to the cost-efficient gemini-3.6-flash model
+GEMINI_MODEL=gemini-3.6-flash
 ```
 
 Set `USE_REAL_GEMINIAI=false` for polished, production-shaped mock insights with

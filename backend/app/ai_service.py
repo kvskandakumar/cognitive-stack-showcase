@@ -32,6 +32,7 @@ class MockInsightGenerator:
     """Deterministic, production-shaped results for local and demo environments."""
 
     async def generate(self, prompt: str, target_language: str) -> GeneratedInsights:
+        print("MockInsightGenerator Class generate method called with prompt:", prompt)
         subject = prompt.rstrip(".?!")
         templates = [
             ("Clarify the primary outcome", f"Define the measurable outcome expected from: {subject}.", "strategy", "high"),
@@ -63,7 +64,7 @@ class MockInsightGenerator:
 class GeminiInsightGenerator:
     def __init__(self, client: object | None = None, model: str | None = None) -> None:
         self._client = client
-        self.model = model or os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+        self.model = model or os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
 
     def _get_client(self) -> object:
         if self._client is not None:
@@ -79,6 +80,7 @@ class GeminiInsightGenerator:
         return self._client
 
     async def generate(self, prompt: str, target_language: str) -> GeneratedInsights:
+        print("------- GeminiInsightGenerator Class generate -------", prompt)
         try:
             response = self._get_client().models.generate_content(
                 model=self.model,
@@ -93,14 +95,18 @@ class GeminiInsightGenerator:
                     "response_schema": GeneratedInsights,
                 },
             )
-        except Exception:
+        except Exception as e:
+            # get the error message from the exception and log it
+            print(f"Error generating insights with Gemini: {e}")
             return await MockInsightGenerator().generate(prompt, target_language)
 
         text = getattr(response, "text", None)
         if not text:
+            print("No text found in Gemini response. Falling back to MockInsightGenerator.")
             return await MockInsightGenerator().generate(prompt, target_language)
 
         try:
             return GeneratedInsights.model_validate_json(text)
         except Exception:
+            print("Error validating Gemini response. Falling back to MockInsightGenerator.")
             return await MockInsightGenerator().generate(prompt, target_language)
