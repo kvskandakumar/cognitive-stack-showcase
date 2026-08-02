@@ -1,7 +1,9 @@
+import { useState } from "react";
 import PromptForm from "../components/PromptForm";
-// import PromptResult from "../components/PromptResult";
+import PromptResult from "../components/PromptResult";
 
 function PromptPage() {
+  const [response, setResponse] = useState(null);
   return (
     <main className="page-container">
       <header className="page-header">
@@ -16,12 +18,12 @@ function PromptPage() {
       <div className="content-grid">
         <section className="panel">
           <h2>Request</h2>
-          <PromptForm />
+          <PromptForm onResult={setResponse} />
         </section>
 
         <section className="panel">
           <h2>Response</h2>
-          {/* <PromptResult /> */}
+          <PromptResult response={response} />
         </section>
       </div>
     </main>

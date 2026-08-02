@@ -19,12 +19,14 @@ body {
 }
 
 button,
+input,
 textarea,
 select {
   font: inherit;
 }
 
 button:focus-visible,
+input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
   outline: 3px solid rgba(37, 99, 235, 0.25);
@@ -94,6 +96,7 @@ select:focus-visible {
   font-weight: 700;
 }
 
+input,
 textarea,
 select {
   width: 100%;
@@ -107,6 +110,11 @@ textarea {
   min-height: 160px;
   padding: 14px;
   resize: vertical;
+}
+
+input {
+  height: 46px;
+  padding: 0 12px;
 }
 
 select {
@@ -193,6 +201,20 @@ button:disabled {
   font-weight: 700;
 }
 
+.insights-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) 180px; gap: 16px; margin-bottom: 20px; }
+.insight-list { display: grid; gap: 12px; }
+.insight-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; padding: 18px; border: 1px solid #e3e8f0; border-radius: 12px; background: #fff; }
+.insight-row h3 { margin: 0 0 6px; font-size: 1rem; }
+.insight-row p { margin: 0; color: #5f6b7c; line-height: 1.5; }
+.insight-metadata { display: flex; align-items: start; gap: 8px; margin: 0; }
+.insight-metadata div { padding: 5px 8px; border-radius: 6px; background: #eef2ff; font-size: 0.75rem; }
+.insight-metadata dt { color: #687386; text-transform: capitalize; }
+.insight-metadata dd { margin: 1px 0 0; color: #25324b; font-weight: 700; }
+.pagination { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 20px; color: #5f6b7c; font-size: 0.875rem; text-align: center; }
+.secondary-button { min-height: 40px; padding: 0 14px; border: 1px solid #cbd3df; background: #fff; color: #25324b; }
+.secondary-button:hover:not(:disabled) { background: #f1f5f9; }
+.loading-note { margin: -12px 0 12px; color: #687386; font-size: 0.875rem; }
+
 @media (max-width: 800px) {
   .page-container {
     padding: 32px 0;
@@ -201,4 +223,9 @@ button:disabled {
   .content-grid {
     grid-template-columns: 1fr;
   }
+
+  .insights-toolbar,
+  .insight-row { grid-template-columns: 1fr; }
+
+  .insight-metadata { flex-wrap: wrap; }
 }

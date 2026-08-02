@@ -1,8 +1,10 @@
 import { configureStore } from "@reduxjs/toolkit";
-import promptReducer from "../features/prompt/store/promptSlice";
+import { promptApi } from "../features/prompt/api/promptApi";
 
 export const store = configureStore({
   reducer: {
-    prompt: promptReducer,
+    [promptApi.reducerPath]: promptApi.reducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(promptApi.middleware),
 });
